@@ -3,10 +3,16 @@ package com.paypal.bfs.test.employeeserv.impl;
 import com.paypal.bfs.test.employeeserv.api.EmployeeResource;
 import com.paypal.bfs.test.employeeserv.model.Employee;
 import com.paypal.bfs.test.employeeserv.repository.EmployeeRepository;
+
+import lombok.SneakyThrows;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -26,9 +32,15 @@ public class EmployeeResourceImpl implements EmployeeResource {
         return ResponseEntity.ok().body(employee);
     }
 
+    @SneakyThrows
     @PostMapping(value = "/v1/bfs/employees")
     @Override
     public ResponseEntity<Employee> createEmployee(@Valid @RequestBody Employee employee) {
+    	List<Employee> employeeList = employeeRepository.findByFirstNameAndLastNameAndDateOfBirth(employee.getFirstName(), employee.getLastName(), employee.getDateOfBirth());
+    	if(!CollectionUtils.isEmpty(employeeList)) {
+    		throw new Exception("Duplicate Employee");
+    	}
+    	
         return ResponseEntity.ok().body(employeeRepository.save(employee));
     }
 
